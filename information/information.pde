@@ -1,4 +1,5 @@
 class InformationSource {
+
   public String symbol;
   public float  probability;
 
@@ -10,9 +11,9 @@ class InformationSource {
 
 class InformationSourceCalc {
 
-  private ArrayList<String> symbols;
-  private ArrayList<Float>  probabilities;
-  private int size;
+  public ArrayList<String> symbols;
+  public ArrayList<Float>  probabilities;
+  public int size;
 
   public InformationSourceCalc(ArrayList<InformationSource> infos) {
     ArrayList<String> s = new ArrayList<String>();
@@ -34,6 +35,18 @@ class InformationSourceCalc {
     size = s.size();
     symbols = s;
     probabilities = p;
+  }
+
+  void add(InformationSource info){
+    symbols.add(info.symbol);
+    probabilities.add(info.probability);
+    size += 1;
+  }
+
+  void add(String s, Float p){
+    symbols.add(s);
+    probabilities.add(p);
+    size += 1;
   }
 
   void printInformationSource() {
@@ -67,11 +80,11 @@ void setup() {
    ArrayList<Float>  probabilities = new ArrayList<Float>();
    symbols.add("a1");
    probabilities.add(1/8.0);
-   symbols.add("a2"); 
+   symbols.add("a2");
    probabilities.add(3/8.0);
-   symbols.add("a3"); 
+   symbols.add("a3");
    probabilities.add(3/8.0);
-   symbols.add("a4"); 
+   symbols.add("a4");
    probabilities.add(1/8.0);
    InformationSourceCalc calc = new InformationSourceCalc(symbols, probabilities);
    */
