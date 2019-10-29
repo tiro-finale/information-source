@@ -7,67 +7,60 @@ class InformationSource {
     symbol = s;
     probability = p;
   }
+
+  public void printInformationSource(){
+    println(symbol + ", " + probability);
+  }
 }
 
 class InformationSourceCalc {
 
-  public ArrayList<String> symbols;
-  public ArrayList<Float>  probabilities;
-  public int size;
+  public ArrayList<InformationSource> sources;
 
-  public InformationSourceCalc(ArrayList<InformationSource> infos) {
-    ArrayList<String> s = new ArrayList<String>();
-    ArrayList<Float>  p = new ArrayList<Float>();
-    for (int i = 0; i < infos.size(); i++) {
-      s.add(infos.get(i).symbol);
-      p.add(infos.get(i).probability);
-    }
-    symbols = s;
-    probabilities = p;
-    size = infos.size();
+  public InformationSourceCalc(ArrayList<InformationSource> s) {
+    sources = s;
   }
 
-  public InformationSourceCalc(ArrayList<String> s, ArrayList<Float> p) {
+  public InformationSourceCalc(InformationSource s){
+    sources.add(s);
+  }
+
+  public InformationSourceCalc(ArrayList<String> s, ArrayList<Float> p){
     if (s.size() != p.size()) {
-      println("Error: InformationSourceCalc not initialized.");
-      exit();
+      String msg = "The length of the source symbol and the probability must match.";
+      throw new ArrayIndexOutOfBoundsException(msg);
     }
-    size = s.size();
-    symbols = s;
-    probabilities = p;
-  }
-
-  void add(InformationSource info){
-    symbols.add(info.symbol);
-    probabilities.add(info.probability);
-    size += 1;
-  }
-
-  void add(String s, Float p){
-    symbols.add(s);
-    probabilities.add(p);
-    size += 1;
-  }
-
-  void printInformationSource() {
-    for (int i = 0; i < size; i++) {
-      print("I" + (i + 1) + " = " + symbols.get(i) + ", ");
-      println("P" + (i + 1) + " = " + probabilities.get(i));
+    for(int i = 0; i < s.size(); i++){
+      sources.add(new InformationSource(s.get(i), p.get(i)));
     }
   }
 
-  ArrayList<Float> getInfoamtionContents() {
+  public void add(InformationSource s){
+    sources.add(s);
+  }
+
+  public void add(String s, float p){
+    sources.add(new InformationSource(s, p));
+  }
+
+  public void printInformationSources() {
+    for (InformationSource s: sources) {
+      s.printInformationSource();
+    }
+  }
+
+  public ArrayList<Float> getInfoamtionContents() {
     ArrayList<Float> contents = new ArrayList<Float>();
-    for (int i = 0; i < size; i++) {
-      contents.add( -log(probabilities.get(i)) / log(2));
+    for (InformationSource s: sources) {
+      contents.add(-log(s.probability) / log(2));
     }
     return contents;
   }
 
-  Float getEntropy() {
-    Float h = 0.0;
-    for (int i = 0; i < size; i++) {
-      h += probabilities.get(i) * log(probabilities.get(i)) / log(2);
+  public float getEntropy() {
+    float h = 0.0;
+    for (InformationSource s: sources) {
+      h += s.probability * log(s.probability) / log(2);
     }
     return -h;
   }
@@ -75,32 +68,18 @@ class InformationSourceCalc {
 
 void setup() {
 
-  /*
-  ArrayList<String> symbols = new ArrayList<String>();
-   ArrayList<Float>  probabilities = new ArrayList<Float>();
-   symbols.add("a1");
-   probabilities.add(1/8.0);
-   symbols.add("a2");
-   probabilities.add(3/8.0);
-   symbols.add("a3");
-   probabilities.add(3/8.0);
-   symbols.add("a4");
-   probabilities.add(1/8.0);
-   InformationSourceCalc calc = new InformationSourceCalc(symbols, probabilities);
-   */
+  ArrayList<InformationSource> sources = new ArrayList<InformationSource>();
+  sources.add(new InformationSource("a1", 1/8.0));
+  sources.add(new InformationSource("a2", 3/8.0));
+  sources.add(new InformationSource("a3", 3/8.0));
+  sources.add(new InformationSource("a4", 1/8.0));
 
-  ArrayList<InformationSource> infos = new ArrayList<InformationSource>();
-  infos.add(new InformationSource("a1", 1/8.0));
-  infos.add(new InformationSource("a2", 3/8.0));
-  infos.add(new InformationSource("a3", 3/8.0));
-  infos.add(new InformationSource("a4", 1/8.0));
-
-  InformationSourceCalc calc = new InformationSourceCalc(infos);
-  calc.printInformationSource();
+  InformationSourceCalc calc = new InformationSourceCalc(sources);
+  calc.printInformationSources();
 
   ArrayList<Float> contents = calc.getInfoamtionContents();
   for (int i = 0; i < contents.size(); i++) {
-    println("I" + (i + 1) + " = " + contents.get(i) + "[bit]");
+    println("I" + (i + 1) + " = " + contents.get(i) + " [bit]");
   }
-  println("H=" + calc.getEntropy());
+  println("H = " + calc.getEntropy());
 }
