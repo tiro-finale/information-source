@@ -1,1 +1,3 @@
-#Connection System
+# 情報源の計算
+
+Processingを使用．説明資料はそんなに調べたわけではないので間違いあるかも．
