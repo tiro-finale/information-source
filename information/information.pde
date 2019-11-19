@@ -73,7 +73,7 @@ class InformationSourceCalc {
   public String getSymbolByProbability(){
     float r = random(0.0, 1.0);
 
-    // ptotal is expressed "|".
+    // "p total" is expressed "|".
     // random=0| 1/8 |      7/8      |random=1
     float ptotal = 0.0;
     for(InformationSource s: sources){
@@ -82,7 +82,8 @@ class InformationSourceCalc {
         return s.symbol;
       }
     }
-    println("error");
+    println("Warning: Sum of probabilities is not \"1\".");
+    println("Return symbol in information sources.");
     return sources.get(0).symbol;
   }
 
