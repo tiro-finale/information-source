@@ -72,15 +72,14 @@ class InformationSourceCalc {
 
   public String getSymbolByProbability() {
     float r = random(0.0, 1.0);
+    float plower = 0.0, pupper = 0.0;
 
-    // "p total" is expressed "|".
-    // random=0| 1/8 |      7/8      |random=1
-    float ptotal = 0.0;
     for (InformationSource s : sources) {
-      ptotal += s.probability;
-      if (r <= ptotal) {
+      pupper += s.probability;
+      if (plower < r && r <= pupper) {
         return s.symbol;
       }
+      plower += s.probability;
     }
     println("Warning: Sum of probabilities is not \"1\".");
     println("Return symbol in information sources.");
@@ -97,6 +96,7 @@ class InformationSourceCalc {
   }
 }
 
+import java.util.Map;
 class State {
 
   public String name;
@@ -150,79 +150,84 @@ class SimpleMarkovProcess {
     current = s;
   }
 
-  void simulation(int num) {
-    long ac = 0, bc = 0, cc = 0;
+  public void transition(){
+    current = current.getNextState();
+  }
+
+  public void simulation(int num) {
+
+    HashMap<State, Long> percentage = new HashMap<State, Long>();
+    for(State s: states){
+      percentage.put(s, 0L); // percentage init
+    }
     for (int i = 1; i <= num; i++) {
-      println(i);
-      if(current.name == "A"){
-        ac += 1;
-      }
-      if(current.name == "B"){
-        bc += 1;
-      }
-      if(current.name == "C"){
-        cc += 1;
+
+      // Percentage
+      for(State s: states){
+        if(s.equals(current)){
+          percentage.put(s, percentage.get(s) + 1);
+        }
       }
       current.printState();
-      current = current.getNextState();
+      transition();
     }
-    println("A=" + ac * 100.0 / num + "%");
-    println("B=" + bc * 100.0 / num + "%");
-    println("C=" + cc * 100.0 / num + "%");
+    // Display
+    for(Map.Entry<State, Long> entry: percentage.entrySet()){
+      println(entry.getKey().name + " = " + entry.getValue() * 100.0 / num + "[%]");
+    }
   }
 }
 
 void setup() {
 
+  // 情報源の基本的な計算
+  ArrayList<InformationSource> sources = new ArrayList<InformationSource>();
+  sources.add(new InformationSource("a1", 1/8.0));
+  sources.add(new InformationSource("a2", 3/8.0));
+  sources.add(new InformationSource("a3", 3/8.0));
+  sources.add(new InformationSource("a4", 1/8.0));
 
- // 情報源の基本的な計算
- ArrayList<InformationSource> sources = new ArrayList<InformationSource>();
- sources.add(new InformationSource("a1", 1/8.0));
- sources.add(new InformationSource("a2", 3/8.0));
- sources.add(new InformationSource("a3", 3/8.0));
- sources.add(new InformationSource("a4", 1/8.0));
+  InformationSourceCalc calc = new InformationSourceCalc(sources);
+  calc.printInformationSources();
 
- InformationSourceCalc calc = new InformationSourceCalc(sources);
- calc.printInformationSources();
+  ArrayList<Float> contents = calc.getInfoamtionContents();
+  for (int i = 0; i < contents.size(); i++) {
+    println("I" + (i + 1) + " = " + contents.get(i) + " [bit]");
+  }
+  println("H = " + calc.getEntropy());
 
- ArrayList<Float> contents = calc.getInfoamtionContents();
- for (int i = 0; i < contents.size(); i++) {
- println("I" + (i + 1) + " = " + contents.get(i) + " [bit]");
- }
- println("H = " + calc.getEntropy());
+  // 情報源記号を確率を用いて算出するテスト
+  sources = new ArrayList<InformationSource>();
+  sources.add(new InformationSource("A", 1/8.0));
+  sources.add(new InformationSource("B", 7/8.0));
+  calc = new InformationSourceCalc(sources);
+  int a = 0, b = 0;
+  for (int i = 1; i <= 10000; i++) {
+    if (calc.getSymbolByProbability() == "A")
+      a++;
+    else
+      b++;
+  }
+  println("A=" + nf(a *100.0 / 10000, 2, 4) + "%, B=" +  nf(b * 100.0 / 10000, 2, 4) + "%");
 
- // 情報源記号を確率を用いて算出するテスト
- sources = new ArrayList<InformationSource>();
- sources.add(new InformationSource("A", 1/8.0));
- sources.add(new InformationSource("B", 7/8.0));
- calc = new InformationSourceCalc(sources);
- int a = 0, b = 0;
- for(int i = 1; i <= 10000; i++){
- if(calc.getSymbolByProbability() == "A")
- a++;
- else
- b++;
- }
- println("A=" + a *100.0 / 10000 + "%, B=" +  b * 100.0 / 10000 + "%");
+  // 単純マルコフ過程
+  State A = new State("A");
+  State B = new State("B");
+  State C = new State("C");
+  A.addNextState(A, 0.5);
+  A.addNextState(B, 0.3);
+  A.addNextState(C, 0.2);
+  B.addNextState(A, 0.3);
+  B.addNextState(B, 0.5);
+  B.addNextState(C, 0.2);
+  C.addNextState(A, 0.1);
+  C.addNextState(B, 0.2);
+  C.addNextState(C, 0.7);
+  ArrayList<State> states = new ArrayList<State>();
+  states.add(A);
+  states.add(B);
+  states.add(C);
 
- // 単純マルコフ過程
- State A = new State("A");
- State B = new State("B");
- State C = new State("C");
- A.addNextState(A, 0.5);
- A.addNextState(B, 0.3);
- A.addNextState(C, 0.2);
- B.addNextState(A, 0.3);
- B.addNextState(B, 0.5);
- B.addNextState(C, 0.2);
- C.addNextState(A, 0.1);
- C.addNextState(B, 0.2);
- C.addNextState(C, 0.7);
- ArrayList<State> states = new ArrayList<State>();
- states.add(A);
- states.add(B);
- states.add(C);
-
- SimpleMarkovProcess smp = new SimpleMarkovProcess(states);
- smp.simulation(10000);
- }
+  SimpleMarkovProcess smp = new SimpleMarkovProcess(states);
+  smp.simulation(10000);
+}
