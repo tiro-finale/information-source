@@ -1,25 +1,24 @@
 import java.util.Map;
+import java.util.LinkedHashMap;
+
 class State {
 
   public String name;
-  public ArrayList<State> nexts;
-  public ArrayList<Float> probabilities;
+  public LinkedHashMap<State, Float> nexts;
 
   public State(String n) {
-    nexts = new ArrayList<State>();
-    probabilities = new ArrayList<Float>();
+    nexts = new LinkedHashMap<State, Float>();
     name = n;
   }
 
   public void addNextState(State s, float p) {
-    nexts.add(s);
-    probabilities.add(p);
+    nexts.put(s, p);
   }
 
   public void printState() {
     println(name);
-    for (int i = 0; i < nexts.size(); i++) {
-      println("-> " + nexts.get(i).name, probabilities.get(i));
+    for (Map.Entry<State, Float> entry : nexts.entrySet()) {
+      println("-> " + entry.getKey().name, entry.getValue());
     }
   }
 
@@ -27,15 +26,15 @@ class State {
     float r = random(0.0, 1.0);
     float plower = 0.0, pupper = 0.0;
 
-    for (int i = 0; i < nexts.size(); i++) {
-      pupper += probabilities.get(i);
+    for (Map.Entry<State, Float> entry : nexts.entrySet()) {
+      pupper += entry.getValue();
       if (plower < r && r <= pupper) {
-        return nexts.get(i);
+        return entry.getKey();
       }
-      plower += probabilities.get(i);
+      plower += entry.getValue();
     }
     print("Error");
-    return nexts.get(0);
+    return new State("None");
   }
 }
 
@@ -52,29 +51,32 @@ class SimpleMarkovProcess {
     current = s;
   }
 
-  public void transition(){
+  public void transition() {
     current = current.getNextState();
   }
 
-  public void simulation(int num) {
+  public void simulation(int num, boolean resultOnly) {
 
-    HashMap<State, Long> percentage = new HashMap<State, Long>();
-    for(State s: states){
+    LinkedHashMap<State, Long> percentage = new LinkedHashMap<State, Long>();
+    for (State s : states) {
       percentage.put(s, 0L); // percentage init
     }
     for (int i = 1; i <= num; i++) {
 
       // Percentage
-      for(State s: states){
-        if(s.equals(current)){
+      for (State s : states) {
+        if (s.equals(current)) {
           percentage.put(s, percentage.get(s) + 1);
         }
       }
-      current.printState();
+
+      if (!resultOnly) {
+        current.printState();
+      }
       transition();
     }
     // Display
-    for(Map.Entry<State, Long> entry: percentage.entrySet()){
+    for (Map.Entry<State, Long> entry : percentage.entrySet()) {
       println(entry.getKey().name + " = " + entry.getValue() * 100.0 / num + "[%]");
     }
   }
@@ -99,5 +101,5 @@ void setup() {
   states.add(C);
 
   SimpleMarkovProcess smp = new SimpleMarkovProcess(states);
-  smp.simulation(10000);
+  smp.simulation(50000, true);
 }
