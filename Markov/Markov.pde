@@ -15,6 +15,10 @@ class State {
     nexts.put(s, p);
   }
 
+  public void removeNextState(State s){
+    nexts.remove(s);
+  }
+
   public void printState() {
     println(name);
     for (Map.Entry<State, Float> entry : nexts.entrySet()) {
@@ -83,9 +87,12 @@ class SimpleMarkovProcess {
 }
 
 void setup() {
+  // Create some States.
   State A = new State("A");
   State B = new State("B");
   State C = new State("C");
+
+  // Define some transitions.
   A.addNextState(A, 0.5);
   A.addNextState(B, 0.3);
   A.addNextState(C, 0.2);
@@ -95,11 +102,14 @@ void setup() {
   C.addNextState(A, 0.1);
   C.addNextState(B, 0.2);
   C.addNextState(C, 0.7);
+
+  // Crate list of states.
   ArrayList<State> states = new ArrayList<State>();
   states.add(A);
   states.add(B);
   states.add(C);
 
+  // Simulator
   SimpleMarkovProcess smp = new SimpleMarkovProcess(states);
   smp.simulation(50000, true);
 }
